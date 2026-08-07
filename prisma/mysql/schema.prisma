@@ -6,6 +6,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("MYSQL_DATABASE_URL")
 }
 
 enum Role {
@@ -35,7 +36,7 @@ model Booking {
   id        Int           @id @default(autoincrement())
   userId    Int
   user      User          @relation(fields: [userId], references: [id])
-  eventId   String       
+  eventId   String        // References MongoDB Event._id — no DB-level FK across engines
   quantity  Int           @default(1)
   status    BookingStatus @default(CONFIRMED)
   createdAt DateTime      @default(now())

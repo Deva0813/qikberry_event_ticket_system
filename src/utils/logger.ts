@@ -13,7 +13,10 @@ async function log(level: string, message: string, meta = undefined) {
   }
 }
 
-export const info = (message: string, meta: any) => log('info', message, meta)
-export const warn = (message: string, meta: any) => log('warn', message, meta)
-export const error = (message: string, meta: any) => log('error', message, meta)
+export default {
+  info: (message: string, meta: any) => log('info', message, meta),
+  warn: (message: string, meta: any) => log('warn', message, meta),
+  error: (message: string, meta: any) => log('error', message, meta)
+}
+
 

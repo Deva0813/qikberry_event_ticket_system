@@ -6,6 +6,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
+  url      = env("MONGODB_DATABASE_URL")
 }
 
 model Event {
@@ -16,7 +17,7 @@ model Event {
   location         String
   totalTickets     Int
   ticketsRemaining Int
-  metadata         Json?    
+  metadata         Json?    // flexible object: guest speakers, tags, seating chart URL, etc.
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -25,7 +26,7 @@ model Event {
 
 model SystemLog {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  level     String   
+  level     String   // info | warn | error
   message   String
   meta      Json?
   createdAt DateTime @default(now())

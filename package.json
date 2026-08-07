@@ -11,8 +11,8 @@
     "prisma:generate:mysql": "prisma generate --schema=prisma/mysql/schema.prisma",
     "prisma:generate:mongo": "prisma generate --schema=prisma/mongodb/schema.prisma",
     "prisma:generate": "pnpm prisma:generate:mysql && pnpm prisma:generate:mongo",
-    "prisma:migrate": "prisma migrate dev --config=prisma/mysql/prisma.config.ts --schema=prisma/mysql/schema.prisma",
-    "prisma:mongo:push": "prisma db push --config=prisma/mongodb/prisma.config.ts --schema=prisma/mongodb/schema.prisma"
+    "prisma:migrate": "prisma migrate dev --schema=prisma/mysql/schema.prisma",
+    "prisma:mongo:push": "prisma db push --schema=prisma/mongodb/schema.prisma"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +26,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@prisma/client": "^7.9.1",
+    "@prisma/client": "^6.16.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -43,7 +43,7 @@
     "@types/morgan": "^1.9.10",
     "@types/node": "^26.1.2",
     "nodemon": "^3.1.14",
-    "prisma": "^7.9.1",
+    "prisma": "^6.16.2",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.23.9",
     "typescript": "^7.0.2"
