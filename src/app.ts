@@ -2,26 +2,41 @@ import cors from 'cors';
 import express, { type Express, type Request, type Response } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { app_config } from './constants/app.config.ts';
+import { corsOrigin, nodeEnv } from './config/env.ts';
 import { rateLimiter } from './middleware/rateLimiter.middleware.ts';
+import sanitizeData from "./middleware/sanitize.middleware.ts"
+import ApiError from './utils/error.ts';
+import errorHandler from "./middleware/errorHandler.middleware.ts"
 
 const app: Express = express();
 
-const corsOrigin = app_config.CORS_ORIGIN?.split(",") || []
-
-console.log(corsOrigin);
-
-
-app.use(morgan("dev"))
+app.use(helmet())
 app.use(cors({
   origin: corsOrigin.length > 0 ? corsOrigin : false,
   credentials: true
 }))
-app.use(helmet())
-app.use(rateLimiter)
 
-app.get('/', (req: Request, res: Response) => {
+app.use(express.json({
+  limit:"10kb"
+}))
+app.use(express.urlencoded({extended:true,limit:"10kb"}))
+
+
+if (nodeEnv !== 'test') app.use(morgan(nodeEnv === 'production' ? 'combined' : 'dev'));
+app.use(rateLimiter)
+app.use(sanitizeData)
+
+app.get('/health', (req, res) => res.json({ success: true, status: 'ok' }));
+
+
+app.get('/', async(req: Request, res: Response) => {
   res.send('Hello QikBerry! ');
 });
+
+app.use((req, res, next) => {
+  next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`));
+});
+
+app.use(errorHandler);
 
 export default app;

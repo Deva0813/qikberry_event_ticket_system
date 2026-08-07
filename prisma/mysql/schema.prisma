@@ -1,0 +1,47 @@
+// MySQL datasource — User Accounts & Bookings (relational, ACID-critical)
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../src/generated/mysql-client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("MYSQL_DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(USER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  bookings     Booking[]
+
+  @@map("users")
+}
+
+model Booking {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  user      User          @relation(fields: [userId], references: [id])
+  eventId   String       
+  quantity  Int           @default(1)
+  status    BookingStatus @default(CONFIRMED)
+  createdAt DateTime      @default(now())
+
+  @@index([userId])
+  @@index([eventId])
+  @@map("bookings")
+}
