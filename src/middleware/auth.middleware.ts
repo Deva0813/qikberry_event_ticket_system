@@ -17,7 +17,7 @@ export default catchAsync(async (req: Request & { user: Partial<User> }, res: Re
 
   try {
     const payload: any = jwt.verify(token, jwtSecret);
-    req.user = { id: payload.sub, role: payload.role };
+    req.user = { id: payload.sub, role: payload.role }; 
     next();
   } catch (err) {
     throw new ApiError(401, 'Invalid or expired token');
