@@ -29,7 +29,7 @@ app.use(sanitizeData)
 app.get('/health', (req, res) => res.json({ success: true, status: 'ok' }));
 
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', async(req: Request, res: Response) => {
   res.send('Hello QikBerry! ');
 });
 
