@@ -15,4 +15,10 @@ const login = {
   }),
 };
 
-export{ register, login };
+const paramId = {
+  param:Joi.object({
+    id:Joi.string().required()
+  })
+}
+
+export{ register, login ,paramId};

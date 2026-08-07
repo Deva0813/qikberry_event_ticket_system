@@ -17,16 +17,18 @@ model Event {
   location         String
   totalTickets     Int
   ticketsRemaining Int
-  metadata         Json?    
+  metadata         Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  deleted          Boolean  @default(false)
+  deletedAt        DateTime?
 
   @@map("events")
 }
 
 model SystemLog {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  level     String  
+  level     String
   message   String
   meta      Json?
   createdAt DateTime @default(now())
