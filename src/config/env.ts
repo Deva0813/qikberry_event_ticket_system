@@ -16,3 +16,6 @@ export const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '1d'
 export const rateLimitWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000
 export const rateLimitMax = Number(process.env.RATE_LIMIT_MAX) || 100
 
+export const MONGODB_DATABASE_URL = process.env.MONGODB_DATABASE_URL || ""
+export const MYSQL_DATABASE_URL = process.env.MYSQL_DATABASE_URL || ''
+

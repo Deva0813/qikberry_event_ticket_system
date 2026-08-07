@@ -36,7 +36,7 @@ model Booking {
   id        Int           @id @default(autoincrement())
   userId    Int
   user      User          @relation(fields: [userId], references: [id])
-  eventId   String        // References MongoDB Event._id — no DB-level FK across engines
+  eventId   String       
   quantity  Int           @default(1)
   status    BookingStatus @default(CONFIRMED)
   createdAt DateTime      @default(now())

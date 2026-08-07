@@ -17,7 +17,7 @@ model Event {
   location         String
   totalTickets     Int
   ticketsRemaining Int
-  metadata         Json?    // flexible object: guest speakers, tags, seating chart URL, etc.
+  metadata         Json?    
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -26,7 +26,7 @@ model Event {
 
 model SystemLog {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  level     String   // info | warn | error
+  level     String  
   message   String
   meta      Json?
   createdAt DateTime @default(now())
