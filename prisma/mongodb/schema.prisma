@@ -1,0 +1,34 @@
+// MongoDB datasource — Event Details (flexible schema) & System Logs
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../src/generated/mongodb-client"
+}
+
+datasource db {
+  provider = "mongodb"
+}
+
+model Event {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  description      String
+  date             DateTime
+  location         String
+  totalTickets     Int
+  ticketsRemaining Int
+  metadata         Json?    
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("events")
+}
+
+model SystemLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  level     String   
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@map("system_logs")
+}

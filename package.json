@@ -7,7 +7,12 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "prisma:generate:mysql": "prisma generate --schema=prisma/mysql/schema.prisma",
+    "prisma:generate:mongo": "prisma generate --schema=prisma/mongodb/schema.prisma",
+    "prisma:generate": "pnpm prisma:generate:mysql && pnpm prisma:generate:mongo",
+    "prisma:migrate": "prisma migrate dev --config=prisma/mysql/prisma.config.ts --schema=prisma/mysql/schema.prisma",
+    "prisma:mongo:push": "prisma db push --config=prisma/mongodb/prisma.config.ts --schema=prisma/mongodb/schema.prisma"
   },
   "keywords": [],
   "author": "",
