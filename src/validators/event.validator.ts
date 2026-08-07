@@ -18,5 +18,11 @@ const listEvents = {
   }),
 };
 
-export { createEvent, listEvents };
+const EventById = {
+  param: Joi.object({
+    id:Joi.string().required()
+  }),
+};
+
+export { createEvent, listEvents,EventById };
 
