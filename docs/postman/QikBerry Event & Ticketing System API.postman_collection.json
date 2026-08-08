@@ -1,0 +1,345 @@
+{
+  "info": {
+    "_postman_id": "dc24ee0f-b552-4df5-b2f4-e6d72cef7ca6",
+    "name": "QikBerry Event & Ticketing System API",
+    "description": "RESTful API for QikBerry's Event & Ticketing System.\n\nData is split across two databases via Prisma: MySQL for Users and Bookings (ACID-critical), MongoDB for Events and System Logs (flexible schema).\n\n## Before you run anything\n\n1. Set the collection variables `baseURL` (e.g. `http://localhost:4000`) and `version` (`/api/v1`) — they default to a local dev server.\n    \n2. Run **Auth → Login** or **Auth → Register** first. Both have a test script that captures the returned JWT into the `{{token}}` collection variable automatically.\n    \n3. Every other request in this collection authenticates via collection-level Bearer auth using `{{token}}` — you don't need to paste a token into individual requests.\n    \n\n## Roles to know about\n\n- **Create Event** requires an `ADMIN`\\-role token, or it returns 403.\n    \n- **Book Ticket** requires a `USER`\\-role token specifically — an `ADMIN` token returns 401 there.\n    \n- A default admin is seeded on server startup: `admin@qikberry.com` / `12345678` (see `src/config/db/seed.ts`).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "25248222"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "const token = jsonData.data.token;",
+                  "pm.collectionVariables.set(\"token\", token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"email\":\"admin@qikberry.com\",\r\n   \"password\":\"12345678\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}{{version}}/auth/login",
+              "host": [
+                "{{baseURL}}{{version}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in and captures the returned JWT into `{{token}}`, used automatically by every other request in this collection.\n\nSwap in the seeded default admin to test admin-only endpoints:\n```json\n{\n  \"email\": \"admin@qikberry.com\",\n  \"password\": \"12345678\"\n}\n```\nReturns 401 for either a wrong email or wrong password — the API deliberately doesn't distinguish which one failed."
+          },
+          "response": []
+        },
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();\r",
+                  "const token = jsonData.data.token;\r",
+                  "pm.collectionVariables.set(\"token\", token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"email\":\"devanand151101@gmail.com\",\r\n   \"password\":\"12345678\",\r\n   \"name\":\"Devanand\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}{{version}}/auth/register",
+              "host": [
+                "{{baseURL}}{{version}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Creates a new user with role `USER` and captures the returned JWT into `{{token}}`, same as Login.\n\nReturns 409 if the email is already registered. New accounts can't book right away against events they haven't seen — run **Get All Events** afterward to grab a real `eventId`."
+          },
+          "response": []
+        }
+      ],
+      "description": "Registration and login. Both requests run a test script that captures the returned JWT into the `{{token}}` collection variable — run one of these before anything else in this collection."
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "Create Event (Admin only)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"title\": \"dummy\",\r\n    \"description\": \"testing\",\r\n    \"date\":\"2026-08-10\",\r\n    \"location\": \"chennai\",\r\n    \"totalTickets\": 10,\r\n    \"metadata\": {\r\n        \"type\": \"house party\"\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}{{version}}/events",
+              "host": [
+                "{{baseURL}}{{version}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "**Requires an ADMIN-role token.** Log in as `admin@qikberry.com` (see Auth → Login) before running this — a USER-role token gets a 403.\n\n`ticketsRemaining` is not sent in the body; the API seeds it automatically to equal `totalTickets` on creation.\n\nUses the collection-level `{{token}}` Bearer auth — no hardcoded Authorization header needed here."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}{{version}}/events?page=1&limit=10",
+              "host": [
+                "{{baseURL}}{{version}}"
+              ],
+              "path": [
+                "events"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "world",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Public — no auth required. Paginated list of events, sorted by date ascending.\n\nSupported query params: `page` (default 1), `limit` (default 10, max 100),`search` (optional used to search events based on title) ."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Event By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}{{version}}/events/6a760356866a0c0feeaba37c",
+              "host": [
+                "{{baseURL}}{{version}}"
+              ],
+              "path": [
+                "events",
+                "6a760356866a0c0feeaba37c"
+              ]
+            },
+            "description": "Public — no auth required. Fetches a single event by its MongoDB `_id`. Returns 404 if not found.\n\nThe id in the URL is just an example — replace it with a real event's `_id` from **Get All Events** or from **Create Event**'s response."
+          },
+          "response": []
+        }
+      ],
+      "description": "List and read endpoints are public. Creating an event requires an ADMIN-role token — log in as the seeded admin (see the Auth folder) first."
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Promote User to Admin",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}{{version}}/user/user_role/cmsjummo40001tc0clrzq9log",
+              "host": [
+                "{{baseURL}}{{version}}"
+              ],
+              "path": [
+                "user",
+                "user_role",
+                "cmsjummo40001tc0clrzq9log"
+              ]
+            },
+            "description": "Sets the given user's `role` to `ADMIN`.\n\nReplace the id in the URL with a real user id, e.g. from a **Register** response."
+          },
+          "response": []
+        }
+      ],
+      "description": "⚠️ `PATCH /user/user_role/:id` currently has no auth middleware in the API — this request succeeds unauthenticated regardless of any token sent. Treat it as an admin-bootstrap utility only; it should require an authenticated admin caller before this is used anywhere beyond local development."
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Get My Tickets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}{{version}}/bookings/me",
+              "host": [
+                "{{baseURL}}{{version}}"
+              ],
+              "path": [
+                "bookings",
+                "me"
+              ]
+            },
+            "description": "Requires a valid JWT. Returns the caller's own bookings, joined with each event's title, date, and location."
+          },
+          "response": []
+        },
+        {
+          "name": "Book Ticket (User role only)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"eventId\": \"6a760356866a0c0feeaba37c\",\r\n    \"quantity\": 2\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}{{version}}/bookings",
+              "host": [
+                "{{baseURL}}{{version}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            },
+            "description": "Books `quantity` tickets for `eventId` using an atomic, concurrency-safe decrement against the event's remaining ticket count — safe even if two requests race for the last ticket.\n\n**Requires a USER-role token** — an ADMIN-role token gets a 401 here by design (see `booking.controller.ts`).\n\nReturns 409 if not enough tickets remain, 404 if the event doesn't exist. Replace `eventId` with a real event's `_id` from **Get All Events**."
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Booking (>48h before event)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"bookingId\":\"a2dd3fcc-84be-4319-ae3e-f465b502bf14\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}{{version}}/bookings/cancel",
+              "host": [
+                "{{baseURL}}{{version}}"
+              ],
+              "path": [
+                "bookings",
+                "cancel"
+              ]
+            },
+            "description": "Cancels `bookingId` and restores its ticket count on the event — but only if the event is more than 48 hours away. Returns 400 if inside that window, 404 if no matching confirmed booking is found for the caller.\n\nReplace `bookingId` with a real booking id from **Book Ticket**'s response or **Get My Tickets**."
+          },
+          "response": []
+        }
+      ],
+      "description": "All booking endpoints require a valid JWT via the collection-level `{{token}}` Bearer auth (set automatically by Login/Register). Booking specifically requires a USER-role token — an ADMIN token gets a 401 there."
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost:4000",
+      "description": "Root URL of the running API server, no trailing slash."
+    },
+    {
+      "key": "version",
+      "value": "/api/v1",
+      "description": "API version prefix, prepended with a leading slash."
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT set automatically by the Login/Register test scripts. Don't set this manually."
+    }
+  ]
+}
