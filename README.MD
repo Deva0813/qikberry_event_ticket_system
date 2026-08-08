@@ -160,6 +160,8 @@ promotion step. Change or remove this before deploying anywhere real.
 
 ## API reference
 
+Postman Collection : [QikBerry Event & Ticket System API collection](docs/postman/QikBerry%20Event%20&%20Ticketing%20System%20API.postman_collection.json)
+
 All routes are prefixed with `/api/v1`. Send the JWT as
 `Authorization: Bearer <token>`.
 
