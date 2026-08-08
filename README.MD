@@ -175,7 +175,7 @@ All routes are prefixed with `/api/v1`. Send the JWT as
 | POST | `/bookings` | JWT (USER role only) | `eventId, quantity` | Books a ticket — atomic, concurrency-safe decrement against `ticketsRemaining` |
 | GET | `/bookings/me` | JWT | — | Lists the caller's bookings, joined with event details |
 | PATCH | `/bookings/cancel` | JWT | `bookingId` | Cancels a booking if more than 48h before the event; restores ticket count |
-| PATCH | `/user/user_role/:id` | none | — | Promotes a user to `ADMIN` |
+| PATCH | `/user/user_role/:id` | JWT + admin | — | Promotes a user to `ADMIN` |
 
 ## Design notes
 
