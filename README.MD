@@ -26,31 +26,76 @@ concerns are split across two engines behind a single Express API.
 
 ## Project structure
 
-```
-prisma/
-  mysql/schema.prisma       Users, Bookings — relational, ACID-critical
-  mysql/migrations/         Prisma Migrate history
-  mongodb/schema.prisma     Events, SystemLog — flexible schema
-
-src/
-  config/
-    env.ts                  Loads and validates required env vars
-    prismaClient.ts         Instantiates and exports both Prisma clients
-    db/seed.ts               Seeds a default admin user on startup
-  routes/                   auth, event, booking, user routers
-  controllers/               Thin — parse request, call service, shape response
-  services/                  Business logic; only layer that touches Prisma
-  middleware/
-    auth.middleware.ts       Verifies JWT, attaches req.user
-    admin.middleware.ts      Restricts a route to ADMIN role
-    validate.middleware.ts   Runs Joi schemas against body/query/params
-    sanitize.middleware.ts   Strips script tags and Mongo operator keys
-    rateLimiter.middleware.ts
-    errorHandler.middleware.ts  Global error handler, always last
-  validators/                Joi schemas per resource
-  utils/                     ApiError, catchAsync, logger
-  app.ts                     Express app + middleware wiring
-  server.ts                  Boots the app
+```bash
+qikberry_event_ticket_system/
+├── docs/
+│   ├── diagrams                   # ER,Architecture,Flow Diagrams
+│   ├── postman                    # Postman Collection
+├── prisma/
+│   ├── mysql/
+│   │   ├── schema.prisma          # MySQL datasource — Users, Bookings
+│   │   └── migrations/            # Prisma Migrate history (currently one: ..._prod)
+│   └── mongodb/
+│       └── schema.prisma          # MongoDB datasource — Events, SystemLog
+│
+├── src/
+│   ├── config/
+│   │   ├── env.ts                 # Loads & validates .env (fail fast on missing vars)
+│   │   ├── prismaClient.ts        # Exports BOTH clients: mysqlClient, mongoClient
+│   │   └── db/
+│   │       └── seed.ts            # Seeds a default admin user on server startup
+│   │
+│   ├── routes/
+│   │   ├── auth.routes.ts         # POST /register, POST /login
+│   │   ├── event.routes.ts        # GET /events, GET /events/:id, POST /events (admin)
+│   │   ├── booking.routes.ts      # POST /bookings, GET /bookings/me, PATCH /bookings/cancel
+│   │   ├── user.routes.ts         # PATCH /user_role/:id — no auth middleware currently
+│   │   └── index.ts               # Mounts all four routers on /api/v1
+│   │
+│   ├── controllers/
+│   │   ├── auth.controller.ts
+│   │   ├── event.controller.ts
+│   │   ├── booking.controller.ts  # Thin — parses req, calls service, shapes res
+│   │   └── user.controller.ts     # makeAdmin
+│   │
+│   ├── services/
+│   │   ├── auth.service.ts        # Hashing, JWT signing/verification
+│   │   ├── event.service.ts       # Event CRUD, pagination
+│   │   ├── booking.service.ts     # Concurrency-safe booking + cancellation transactions
+│   │   └── user.service.ts        # makeAdmin — role update
+│   │
+│   ├── middleware/                # singular, not "middlewares"
+│   │   ├── auth.middleware.ts     # Verifies JWT, attaches req.user
+│   │   ├── admin.middleware.ts    # Role check, used on POST /events
+│   │   ├── validate.middleware.ts # Runs Joi schemas against body/query/params
+│   │   ├── sanitize.middleware.ts # Strips script tags + Mongo operator keys
+│   │   ├── rateLimiter.middleware.ts
+│   │   └── errorHandler.middleware.ts  # Global — last middleware in the chain
+│   │
+│   ├── validators/
+│   │   ├── auth.validator.ts      # Joi schemas: register, login, paramId
+│   │   ├── event.validator.ts
+│   │   └── booking.validator.ts
+│   │
+│   ├── utils/
+│   │   ├── error.ts               # ApiError class → errorHandler formats it
+│   │   ├── catchAsync.ts          # Wraps async controllers, forwards errors
+│   │   └── logger.ts              # Writes to MongoDB "system_logs" collection + console
+│   │
+│   ├── generated/                 # gitignored — output of `pnpm prisma:generate`
+│   │   ├── mysql-client/
+│   │   └── mongodb-client/
+│   │
+│   ├── app.ts                     # Express app: helmet, cors, rate limit, sanitize, routes, error handler
+│   └── server.ts                  # Boots the app, runs seed() in the listen callback
+│
+├── .gitignore
+├── .prettierrc
+├── README.MD
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml            # onlyBuiltDependencies allowlist, not a monorepo
+└── tsconfig.json
 ```
 
 ## Architecture Diagram
@@ -66,7 +111,7 @@ pnpm install
 ```
 
 Create a `.env` file in the project root with:
-Sample `.env.example`
+Sample [.env.example](.env.example)
 
 ```bash
 PORT=4000
