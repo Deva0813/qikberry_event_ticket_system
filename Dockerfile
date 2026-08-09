@@ -1,4 +1,4 @@
-FROM node:24-slim
+FROM node:24-alpine
 
 # netcat is used by docker-entrypoint.sh to wait for mysql/mongo to accept connections
 RUN apk add --no-cache netcat-openbsd
